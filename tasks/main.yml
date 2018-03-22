@@ -1,2 +1,116 @@
 ---
 # tasks file for concourse-ci
+- name: Fetch Concourse binary.
+  get_url:
+    url: "https://github.com/concourse/concourse/releases/download/v3.9.2/concourse_linux_amd64"
+    dest: /usr/local/bin/concourse
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Create concourse user.
+  user:
+    name: "{{ concourse_user }}"
+    system: yes
+    state: present
+
+- name: Create config dir.
+  file:
+    path: "{{ concourse_config_dir }}"
+    state: directory
+    owner: "{{ concourse_user }}"
+    group: "{{ concourse_user }}"
+    mode: "0750"
+
+- name: Set ownership on config dir recursively.
+  file:
+    path: "{{ concourse_config_dir }}"
+    state: directory
+    owner: "{{ concourse_user }}"
+    group: "{{ concourse_user }}"
+    recurse: yes
+
+- name: Create SSH keys for workers.
+  command: ssh-keygen -t rsa -b 4096 -q -N '' -f /etc/concourse/{{ item }}_key
+  become_user: "{{ concourse_user }}"
+  args:
+    creates: /etc/concourse/{{ item }}_key
+  with_items:
+    - tsa
+    - worker
+    - session_signing
+
+- name: Whitelist worker pubkey.
+  copy:
+    remote_src: yes
+    src: /etc/concourse/worker_key.pub
+    dest: /etc/concourse/authorized_worker_keys
+    owner: "{{ concourse_user }}"
+    group: "{{ concourse_user }}"
+    force: yes # TODO don't clobber
+
+- name: Configure service environments.
+  template:
+    dest: "{{ concourse_config_dir }}/{{ item.key }}_environment"
+    src: concourse_service_environment.j2
+    owner: "{{ concourse_user }}"
+    group: "{{ concourse_user }}"
+    mode: "0640"
+  with_dict: "{{ concourse_environments }}"
+
+- name: Write systemd service file.
+  copy:
+    dest: /etc/systemd/system/concourse-web.service
+    owner: root
+    group: root
+    mode: "0644"
+    content: |-
+      [Unit]
+      Description=Concourse CI web process (ATC and TSA)
+      After=postgresql.service
+
+      [Service]
+      User=concourse
+      Restart=on-failure
+      EnvironmentFile=/etc/concourse/web_environment
+      ExecStart=/usr/local/bin/concourse web
+
+      [Install]
+      WantedBy=multi-user.target
+  notify:
+    - reload systemd-daemon
+    - restart concourse
+
+- name: Write systemd service file.
+  copy:
+    dest: /etc/systemd/system/concourse-worker.service
+    owner: root
+    group: root
+    mode: "0644"
+    content: |-
+      [Unit]
+      Description=Concourse CI worker process
+      After=concourse-web.service
+
+      [Service]
+      User=root
+      Restart=on-failure
+      EnvironmentFile=/etc/concourse/worker_environment
+      ExecStart=/usr/local/bin/concourse worker
+
+      [Install]
+      WantedBy=multi-user.target
+  notify:
+    - reload systemd-daemon
+    - restart concourse
+
+- meta: flush_handlers
+
+- name: Start services.
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  with_items:
+    - concourse-worker
+    - concourse-web

@@ -1,0 +1,4 @@
+{% set _concourse_environment_map=item.value %}
+{% for k, v in _concourse_environment_map.iteritems() %}
+{{ k }}="{{ v }}"
+{% endfor %}

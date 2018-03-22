@@ -1,2 +1,13 @@
 ---
 # handlers file for concourse-ci
+- name: reload systemd-daemon
+  systemd:
+    daemon_reload: yes
+
+- name: restart concourse services
+  service:
+    name: "{{ item }}"
+    state: restarted
+  with_items:
+    - concourse-worker
+    - concourse-web
