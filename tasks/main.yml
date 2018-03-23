@@ -57,6 +57,7 @@
     group: "{{ concourse_user }}"
     mode: "0640"
   with_dict: "{{ concourse_environments }}"
+  notify: restart concourse
 
 - name: Write systemd service file.
   copy:

@@ -4,7 +4,7 @@
   systemd:
     daemon_reload: yes
 
-- name: restart concourse services
+- name: restart concourse
   service:
     name: "{{ item }}"
     state: restarted
