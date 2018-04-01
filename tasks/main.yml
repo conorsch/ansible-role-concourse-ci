@@ -8,6 +8,7 @@
     group: root
     mode: "0755"
     checksum: "sha512:{{ concourse_checksum_map[concourse_version] }}"
+  notify: restart concourse
 
 - name: Create concourse user.
   user:
