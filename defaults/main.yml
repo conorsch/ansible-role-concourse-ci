@@ -4,6 +4,11 @@ concourse_user: concourse
 concourse_config_dir: /etc/concourse
 concourse_web_port: 8080
 
+concourse_version: "3.10.0"
+
+# Support retrieving hardcoded checksums per version. Must be SHA512 checksum.
+concourse_checksum_map:
+  3.10.0: fb39350400df0bca25e2b211233b4643d32582e2e95c4ad5066afe8ea7fe41d80f2ba4c71068d22cb98f764a356c560af51ecf085822260f402929edcde19102
 
 # Convenient override, will be interpolated below.
 concourse_external_url: "http://{{ ansible_default_ipv4.address }}:{{ concourse_web_port }}"
