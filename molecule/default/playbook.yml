@@ -2,7 +2,26 @@
 - name: Configure Concourse CI server.
   hosts: concourse-server
   roles:
+    - role: ANXS.postgresql
+      tags: postgres
+
+      tags: concourse
     - role: concourse-ci
+  vars:
+    postgresql_databases:
+      - name: atc
+        owner: "{{ concourse_user }}"
+
+    postgresql_users:
+      - name: "{{ concourse_user }}"
+        pass: notthegreatestpasswordever
+        encrypted: no
+
+    postgresql_user_privileges:
+      - name: "{{ concourse_user }}"
+        db: atc
+        priv: "ALL"
+        role_attr_flags: "CREATEDB"
 
 - name: Configure Concourse CI fly client.
   hosts: concourse-client
