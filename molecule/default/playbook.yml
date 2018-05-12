@@ -1,5 +1,10 @@
 ---
-- name: Converge
-  hosts: all
+- name: Configure Concourse CI server.
+  hosts: concourse-server
+  roles:
+    - role: concourse-ci
+
+- name: Configure Concourse CI fly client.
+  hosts: concourse-client
   roles:
     - role: concourse-ci

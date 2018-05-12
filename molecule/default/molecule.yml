@@ -10,6 +10,15 @@ lint:
 platforms:
   - name: concourse-xenial
     box: ubuntu/xenial64
+    groups:
+      - concourse
+      - concourse-server
+
+  - name: fly-xenial
+    box: ubuntu/xenial64
+    groups:
+      - concourse
+      - concourse-client
 provisioner:
   name: ansible
   lint:
