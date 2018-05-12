@@ -8,3 +8,4 @@
   hosts: concourse-client
   roles:
     - role: concourse-ci
+      concourse_is_server: no

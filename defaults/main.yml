@@ -9,9 +9,16 @@ concourse_worker_port: 2222
 
 concourse_version: "3.10.0"
 
+# Whether to install full CI server setup. If false, only installs
+# the "fly" CLI client, with matching version for concourse binary.
+concourse_is_server: yes
+
 # Support retrieving hardcoded checksums per version. Must be SHA512 checksum.
 concourse_checksum_map:
-  3.10.0: fb39350400df0bca25e2b211233b4643d32582e2e95c4ad5066afe8ea7fe41d80f2ba4c71068d22cb98f764a356c560af51ecf085822260f402929edcde19102
+  concourse:
+    3.10.0: fb39350400df0bca25e2b211233b4643d32582e2e95c4ad5066afe8ea7fe41d80f2ba4c71068d22cb98f764a356c560af51ecf085822260f402929edcde19102
+  fly:
+    3.10.0: df71a2c99a09c5629cb5e034d0bb7db12481b826e15ed4e3aa1c97339399fdd7111262ac9fd08c955dc4109739e46048b471cfd982a69dbbe6b284ea49285e34
 
 # Convenient override, will be interpolated below.
 concourse_external_url: "http://{{ ansible_default_ipv4.address }}:{{ concourse_web_port }}"
